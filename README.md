@@ -1,3 +1,5 @@
+<img src="assets/jn-smarter-iptv-player-pro-cover.svg" alt="cover">
+
 # JN Smarter IPTV Player Pro — Flutter frontend
 
 A cross-platform Flutter client (Android, iOS, desktop, web) for the
