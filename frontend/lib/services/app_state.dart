@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:video_player/video_player.dart';
 
 import '../models/channel.dart';
 import '../models/epg.dart';
@@ -26,11 +25,11 @@ class AppState extends ChangeNotifier {
   ChannelTab tab = ChannelTab.all;
   bool autoplayLast = true;
 
+  // Playback itself (video controller, loading/error state) is owned by the
+  // platform-specific ChannelPlayer widget — AppState only tracks *which*
+  // channel is tuned in, for the sidebar/tuner-dial/EPG UI.
   Channel? activeChannel;
   EpgResponse epg = EpgResponse.empty();
-  VideoPlayerController? videoController;
-  bool videoLoading = false;
-  String? videoError;
 
   bool loadingPlaylists = false;
   bool loadingChannels = false;
@@ -201,7 +200,6 @@ class AppState extends ChangeNotifier {
       activePlaylistId = null;
       channels = [];
       activeChannel = null;
-      await _disposeVideo();
     }
     await loadPlaylists();
   }
@@ -223,33 +221,19 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Marks a channel as tuned in and fetches its EPG. Actual video playback
+  /// is handled by the ChannelPlayer widget watching `activeChannel`.
   Future<void> playChannel(Channel channel) async {
     activeChannel = channel;
-    videoError = null;
-    videoLoading = true;
+    epg = EpgResponse.empty();
     notifyListeners();
-
-    await _disposeVideo();
-
-    try {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(channel.streamUrl));
-      videoController = controller;
-      await controller.initialize();
-      await controller.setLooping(false);
-      await controller.play();
-    } catch (e) {
-      videoError = 'Playback error: $e';
-    } finally {
-      videoLoading = false;
-      notifyListeners();
-    }
 
     try {
       epg = await api.getEpg(channel.id);
+      notifyListeners();
     } catch (_) {
-      epg = EpgResponse.empty();
+      // EPG is best-effort
     }
-    notifyListeners();
 
     try {
       await api.updateSettings(lastChannelId: channel.id);
@@ -266,20 +250,5 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       // ignore transient EPG refresh failures
     }
-  }
-
-  Future<void> _disposeVideo() async {
-    final controller = videoController;
-    videoController = null;
-    if (controller != null) {
-      await controller.pause();
-      await controller.dispose();
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposeVideo();
-    super.dispose();
   }
 }

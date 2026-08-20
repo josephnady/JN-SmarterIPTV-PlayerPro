@@ -46,24 +46,24 @@ class _AddPlaylistSheetState extends State<AddPlaylistSheet> with SingleTickerPr
   }
 
   Future<void> _pickM3uFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['m3u', 'm3u8', 'txt'],
       withData: true,
     );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() => _pickedM3u = result.files.first);
+    if (files.isNotEmpty) {
+      setState(() => _pickedM3u = files.first);
     }
   }
 
   Future<void> _pickEpgFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xml'],
       withData: true,
     );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() => _pickedEpg = result.files.first);
+    if (result != null && result.isNotEmpty) {
+      setState(() => _pickedEpg = result.first);
     }
   }
 
@@ -100,14 +100,17 @@ class _AddPlaylistSheetState extends State<AddPlaylistSheet> with SingleTickerPr
           );
           break;
         case 2:
-          if (_fileName.text.trim().isEmpty || _pickedM3u == null || _pickedM3u!.bytes == null) {
+          if (_fileName.text.trim().isEmpty || _pickedM3u == null || _pickedM3u!.readAsBytes() == null) {
             throw Exception('Name and a playlist file are required.');
           }
+          final m3uBytes = await _pickedM3u!.readAsBytes();
+          final rpgBytes = await _pickedEpg!.readAsBytes();
+
           await state.addM3uUpload(
             name: _fileName.text.trim(),
-            m3uBytes: _pickedM3u!.bytes!,
+            m3uBytes: m3uBytes,
             m3uFilename: _pickedM3u!.name,
-            epgBytes: _pickedEpg?.bytes,
+            epgBytes: rpgBytes,
             epgFilename: _pickedEpg?.name,
           );
           break;
