@@ -8,7 +8,6 @@ class ChannelTile extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
   final VoidCallback onToggleFavorite;
-
   const ChannelTile({
     super.key,
     required this.channel,

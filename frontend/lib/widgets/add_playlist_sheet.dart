@@ -1,11 +1,13 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
 import '../theme.dart';
 
 class AddPlaylistSheet extends StatefulWidget {
+  @Preview(name: "AddPlaylistSheet")
   const AddPlaylistSheet({super.key});
 
   @override

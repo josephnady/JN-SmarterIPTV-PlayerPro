@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../theme.dart';
@@ -6,6 +7,7 @@ import 'player_chrome.dart';
 
 class ChannelPlayer extends StatefulWidget {
   final String? streamUrl;
+  @Preview(name: "ChannelPlayer")
   const ChannelPlayer({super.key, required this.streamUrl});
 
   @override

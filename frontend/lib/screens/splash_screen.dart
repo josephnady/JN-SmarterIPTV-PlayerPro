@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
@@ -10,6 +11,7 @@ import 'home_screen.dart';
 /// never just flickers on a fast connection), replaces itself with
 /// [HomeScreen].
 class SplashScreen extends StatefulWidget {
+  @Preview(name: "ChannelTile")
   const SplashScreen({super.key});
 
   @override

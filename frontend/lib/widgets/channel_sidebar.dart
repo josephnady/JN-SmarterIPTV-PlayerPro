@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
@@ -6,6 +7,7 @@ import '../theme.dart';
 import 'channel_tile.dart';
 
 class ChannelSidebar extends StatelessWidget {
+  @Preview(name: "ChannelSidebar")
   const ChannelSidebar({super.key});
 
   @override
@@ -93,7 +95,6 @@ class ChannelSidebar extends StatelessWidget {
       ),
     );
   }
-
   Widget _tabChip(BuildContext context, String label, ChannelTab value, ChannelTab current) {
     final active = value == current;
     return Expanded(

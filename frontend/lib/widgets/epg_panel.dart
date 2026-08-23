@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,8 @@ import '../services/app_state.dart';
 import '../theme.dart';
 
 class EpgPanel extends StatelessWidget {
+  @Preview(name: "ChannelTile")
+
   const EpgPanel({super.key});
 
   @override

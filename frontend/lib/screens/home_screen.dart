@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
@@ -9,6 +10,7 @@ import '../widgets/player_panel.dart';
 import '../widgets/playlist_rail.dart';
 
 class HomeScreen extends StatelessWidget {
+  @Preview(name: "HomeScreen")
   const HomeScreen({super.key});
 
   @override
