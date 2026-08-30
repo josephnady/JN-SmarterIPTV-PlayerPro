@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../models/channel.dart';
 import '../theme.dart';
 
@@ -19,7 +18,7 @@ class ChannelTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: active ? AppColors.accent.withOpacity(0.14) : Colors.transparent,
+      color: active ? AppColors.accent.withValues(alpha: 0.14) : Colors.transparent,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),

@@ -8,7 +8,6 @@ import '../theme.dart';
 
 class EpgPanel extends StatelessWidget {
   @Preview(name: "ChannelTile")
-
   const EpgPanel({super.key});
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
@@ -7,6 +8,7 @@ import 'add_playlist_sheet.dart';
 import 'settings_sheet.dart';
 
 class PlaylistRail extends StatelessWidget {
+  @Preview(name: "PlaylistRail")
   const PlaylistRail({super.key});
 
   @override

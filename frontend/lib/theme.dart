@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// Colors mirroring the desktop app's "tuner console" design language.
+/// Colors simulating a modern streaming service (Netflix style).
 class AppColors {
-  static const bg = Color(0xFF0D0F14);
-  static const bgElevated = Color(0xFF12141B);
-  static const panel = Color(0xFF171A23);
-  static const panel2 = Color(0xFF1C202A);
-  static const line = Color(0xFF262B38);
-  static const text = Color(0xFFE7E9EE);
-  static const textDim = Color(0xFF8B93A7);
-  static const textFaint = Color(0xFF565D70);
-  static const accent = Color(0xFFE8A33D);
-  static const accentDim = Color(0xFF7A5A25);
-  static const live = Color(0xFF37C99A);
-  static const danger = Color(0xFFE0555A);
+  static const bg = Color(0xFF141414);       // Netflix Dark Grey background
+  static const bgElevated = Color(0xFF181818);
+  static const panel = Color(0xFF2F2F2F);
+  static const panel2 = Color(0xFF333333);
+  static const line = Color(0xFF404040);
+  static const text = Color(0xFFE5E5E5);     // Off-white text
+  static const textDim = Color(0xFFB3B3B3);
+  static const textFaint = Color(0xFF808080);
+  static const accent = Color(0xFFE50914);   // Netflix Red
+  static const accentDim = Color(0xFF91060D);
+  static const live = Color(0xFFE50914);     // Red also used for live indicators
+  static const danger = Color(0xFFB9090B);
 }
 
 ThemeData buildAppTheme() {
@@ -31,7 +31,7 @@ ThemeData buildAppTheme() {
       displayColor: AppColors.text,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.bgElevated,
+      backgroundColor: Colors.black, // Netflix typically uses pure black for top bars
       foregroundColor: AppColors.text,
       elevation: 0,
     ),
@@ -44,16 +44,16 @@ ThemeData buildAppTheme() {
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4), // Slightly sharper corners
         borderSide: const BorderSide(color: AppColors.line),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         borderSide: const BorderSide(color: AppColors.line),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.accentDim),
+        borderRadius: BorderRadius.circular(4),
+        borderSide: const BorderSide(color: AppColors.accent),
       ),
       labelStyle: const TextStyle(color: AppColors.textDim),
       hintStyle: const TextStyle(color: AppColors.textFaint),
@@ -61,20 +61,20 @@ ThemeData buildAppTheme() {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.accent,
-        foregroundColor: const Color(0xFF1A1305),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.text,
         side: const BorderSide(color: AppColors.line),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
     ),
-    switchTheme: const SwitchThemeData(
-      thumbColor: MaterialStatePropertyAll(AppColors.accent),
-      trackColor: MaterialStatePropertyAll(AppColors.accentDim),
+    switchTheme: SwitchThemeData(
+      thumbColor: const WidgetStatePropertyAll(AppColors.accent),
+      trackColor: WidgetStatePropertyAll(AppColors.accent.withValues(alpha: 0.5)),
     ),
   );
 }

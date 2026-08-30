@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
@@ -9,6 +10,7 @@ import 'channel_player/channel_player.dart';
 import 'tuner_dial.dart';
 
 class PlayerPanel extends StatefulWidget {
+  @Preview(name: "PlayerPanel")
   const PlayerPanel({super.key});
 
   @override

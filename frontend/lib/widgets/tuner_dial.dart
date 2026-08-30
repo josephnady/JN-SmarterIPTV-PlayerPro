@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
 import '../theme.dart';
 
 class TunerDial extends StatelessWidget {
+  @Preview(name: "TunerDial")
   const TunerDial({super.key});
 
   @override

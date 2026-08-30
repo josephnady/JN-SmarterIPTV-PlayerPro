@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:provider/provider.dart';
 
 import '../services/app_state.dart';
 import '../theme.dart';
 
 class SettingsSheet extends StatefulWidget {
+  @Preview(name: "SettingsSheet")
   const SettingsSheet({super.key});
 
   @override
