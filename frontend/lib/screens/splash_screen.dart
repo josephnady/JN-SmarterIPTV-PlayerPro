@@ -5,13 +5,13 @@ import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../theme.dart';
 import 'home_screen.dart';
+import 'live_screen.dart';
 
 /// Shown while the app connects to the backend and loads playlists. Once
 /// [AppState.init] finishes (and a minimum display time has elapsed, so it
 /// never just flickers on a fast connection), replaces itself with
-/// [HomeScreen].
+/// [LiveScreen].
 class SplashScreen extends StatefulWidget {
-  @Preview(name: "ChannelTile")
   const SplashScreen({super.key});
 
   @override
@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.line),
                 ),
-                child: const Icon(Icons.settings_input_antenna, color: AppColors.accent, size: 34),
+                child: const Icon(Icons.live_tv_rounded, color: AppColors.accent, size: 34),
               ),
             ),
             const SizedBox(height: 22),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jn_smarter_iptv_player_pro/screens/home_screen.dart';
+import 'package:jn_smarter_iptv_player_pro/screens/live_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/splash_screen.dart';
@@ -23,6 +25,10 @@ class JnSmarterIptvApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
         home: const SplashScreen(),
+        routes: {
+          '/HomeScreen': (context) => const HomeScreen(),
+          '/LiveScreen': (context) => const LiveScreen(),
+        },
       ),
     );
   }

@@ -20,7 +20,7 @@ class PlaylistRail extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 14),
-          const Icon(Icons.settings_input_antenna, color: AppColors.accent),
+          const Icon(Icons.live_tv_rounded, color: AppColors.accent),
           const SizedBox(height: 12),
           Expanded(
             child: ListView(

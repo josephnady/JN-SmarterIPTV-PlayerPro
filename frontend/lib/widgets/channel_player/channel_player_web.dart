@@ -4,6 +4,7 @@ import 'dart:js_interop_unsafe';
 import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:web/web.dart' as web;
 
 import '../../theme.dart';
@@ -24,22 +25,7 @@ extension type _Hls._(JSObject _) implements JSObject {
   external void destroy();
 }
 
-/// Plays a channel's HLS stream in the browser using hls.js, since Chrome/
-/// Firefox/Edge don't support `.m3u8` natively in a plain `<video>` tag (only
-/// Safari does). Requires `hls.js` to be loaded as a `<script>` in
-/// `web/index.html` — see the frontend README for the exact tag to add.
-///
-/// Built on `package:web` + `dart:js_interop` (the current, non-deprecated
-/// interop stack) rather than the legacy `dart:html`/`dart:js_util`.
-///
-/// Starts muted: `attachMedia`/`loadSource` are asynchronous, so nothing is
-/// actually attached to the element yet at the point playback would
-/// otherwise be requested — calling `play()` there throws `NotSupportedError:
-/// no supported sources`. Autoplay is left to the browser (which requires
-/// `muted` to fire reliably); a `loadeddata` listener is a safety net for
-/// browsers that don't honor the `autoplay` attribute alone. The user's own
-/// play button and volume slider both unmute explicitly, since those are
-/// real user gestures browsers are happy to allow unmuted playback for.
+/// Plays a channel's HLS stream in the browser using hls.js.
 class ChannelPlayer extends StatefulWidget {
   final String? streamUrl;
 
@@ -56,12 +42,14 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
   late final web.HTMLVideoElement _video;
   late final JSFunction _onPlayJs;
   late final JSFunction _onPauseJs;
+  late final JSFunction _onFullscreenChangeJs;
   JSFunction? _onLoadedDataJs;
   _Hls? _hls;
 
   bool _loading = false;
   bool _isPlaying = false;
   double _volume = 1.0;
+  double _lastVolume = 0.7; // State to remember the last volume level
   String? _error;
 
   @override
@@ -72,12 +60,11 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
 
     _video = web.HTMLVideoElement()
       ..autoplay = true
-      ..muted = true
+      ..muted = false
       ..controls = false
       ..style.width = '100%'
       ..style.height = '100%'
-      ..style.objectFit = 'contain'
-      ..setAttribute('plays inline', 'true');
+      ..style.objectFit = 'contain';
 
     _onPlayJs = ((web.Event _) {
       if (mounted) setState(() => _isPlaying = true);
@@ -87,6 +74,12 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
     }).toJS;
     _video.addEventListener('play', _onPlayJs);
     _video.addEventListener('pause', _onPauseJs);
+
+    // Sync state when browser enters/exits fullscreen (e.g. Esc key)
+    _onFullscreenChangeJs = ((web.Event _) {
+      if (mounted) setState(() {});
+    }).toJS;
+    web.document.addEventListener('fullscreenchange', _onFullscreenChangeJs);
 
     ui_web.platformViewRegistry.registerViewFactory(
       _viewType,
@@ -124,7 +117,6 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
         hls.loadSource(url);
         hls.attachMedia(_video);
       } else if (canPlayNative) {
-// Safari (and any browser with native HLS support) doesn't need hls.js.
         _video.src = url;
       } else {
         setState(() {
@@ -136,11 +128,6 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
         return;
       }
 
-// Safety net: `autoplay` + `muted` should start playback on their own
-// once hls.js/the browser actually has data buffered, but not every
-// browser honors the attribute reliably in every case. This only ever
-// nudges a still-paused video — never calls play() before there's
-// something to play.
       if (_onLoadedDataJs != null) {
         _video.removeEventListener('loadeddata', _onLoadedDataJs!);
       }
@@ -162,13 +149,55 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
     }
   }
 
+  void _onVolumeToggle() {
+    setState(() {
+      final currentVolume = _video.volume;
+      if (currentVolume > 0) {
+        _lastVolume = currentVolume;
+        _video.volume = 0;
+        _volume = 0;
+      } else {
+        _video.volume = _lastVolume;
+        _volume = _lastVolume;
+      }
+      _video.muted = _volume == 0;
+    });
+  }
+
+  void _seekRelative(Duration offset) {
+    _video.currentTime += offset.inSeconds.toDouble();
+  }
+
+  void _toggleFullScreen() {
+    final doc = web.document;
+    if (doc.fullscreenElement == null) {
+      // Enter Fullscreen
+      doc.documentElement?.requestFullscreen();
+      // for web browsers
+      _video.requestFullscreen();
+
+      // Hint for mobile browsers
+      // SystemChrome.setPreferredOrientations([
+      //   DeviceOrientation.landscapeLeft,
+      //   DeviceOrientation.landscapeRight,
+      // ]);
+    } else {
+      // Exit Fullscreen
+      doc.exitFullscreen();
+
+      // SystemChrome.setPreferredOrientations([
+      //   DeviceOrientation.portraitUp,
+      // ]);
+    }
+    doc.documentElement?.requestFullscreen();
+
+  }
+
   void _teardown() {
     if (_hls != null) {
       try {
         _hls!.destroy();
-      } catch (_) {
-// best-effort cleanup
-      }
+      } catch (_) {}
       _hls = null;
     }
     if (_onLoadedDataJs != null) {
@@ -184,6 +213,7 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
     _teardown();
     _video.removeEventListener('play', _onPlayJs);
     _video.removeEventListener('pause', _onPauseJs);
+    web.document.removeEventListener('fullscreenchange', _onFullscreenChangeJs);
     super.dispose();
   }
 
@@ -217,18 +247,25 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
         if (_isPlaying) {
           _video.pause();
         } else {
-// A direct tap is a real user gesture, so it's safe to unmute here.
           _video.muted = false;
           unawaited(_video.play().toDart.catchError((_) => null));
         }
       },
       volume: _volume,
       onVolumeChanged: (v) {
-        setState(() => _volume = v);
+        setState(() {
+          _volume = v;
+          if (v > 0) _lastVolume = v;
+        });
         _video
           ..muted = false
           ..volume = v;
       },
+      onVolumeToggle: _onVolumeToggle,
+      onSeekBackward: () => _seekRelative(const Duration(seconds: -10)),
+      onSeekForward: () => _seekRelative(const Duration(seconds: 10)),
+      onToggleFullScreen: _toggleFullScreen,
+      isFullScreen: web.document.fullscreenElement != null,
     );
   }
 }

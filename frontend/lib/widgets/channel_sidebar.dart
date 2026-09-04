@@ -27,20 +27,20 @@ class ChannelSidebar extends StatelessWidget {
                 TextField(
                   decoration: const InputDecoration(
                     hintText: 'Search channels…',
-                    prefixIcon: Icon(Icons.search, size: 18, color: AppColors.textFaint),
+                    prefixIcon: Icon(Icons.search, size: 15, color: AppColors.textFaint),
                   ),
                   onChanged: (v) => context.read<AppState>().setSearch(v),
                 ),
                 if (state.groups.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
-                    value: state.groupFilter,
+                    initialValue: state.groupFilter,
                     isExpanded: true,
                     dropdownColor: AppColors.bgElevated,
                     items: [
                       const DropdownMenuItem<String?>(value: null, child: Text('All groups')),
                       ...state.groups.map(
-                        (g) => DropdownMenuItem<String?>(value: g, child: Text(g, overflow: TextOverflow.ellipsis)),
+                        (g) => DropdownMenuItem<String?>(value: g, child: Text(g, overflow: TextOverflow.clip)),
                       ),
                     ],
                     onChanged: (v) => context.read<AppState>().setGroupFilter(v),

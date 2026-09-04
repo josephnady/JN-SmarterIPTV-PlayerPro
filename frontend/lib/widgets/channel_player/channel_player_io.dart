@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../theme.dart';
@@ -7,7 +7,6 @@ import 'player_chrome.dart';
 
 class ChannelPlayer extends StatefulWidget {
   final String? streamUrl;
-  @Preview(name: "ChannelPlayer")
   const ChannelPlayer({super.key, required this.streamUrl});
 
   @override
@@ -18,6 +17,9 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
   VideoPlayerController? _controller;
   bool _loading = false;
   String? _error;
+  
+  // Logic: Store the volume level so we can restore it after unmuting
+  double _lastVolume = 0.7; 
 
   @override
   void initState() {
@@ -36,36 +38,71 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
   Future<void> _load(String? url) async {
     final old = _controller;
     _controller = null;
-    setState(() {
-      _error = null;
-      _loading = url != null;
+    setState(() { 
+      _error = null; 
+      _loading = url != null; 
     });
 
-    if (old != null) {
-      await old.pause();
-      await old.dispose();
+    if (old != null) { 
+      await old.pause(); 
+      await old.dispose(); 
     }
     if (url == null) return;
 
     try {
       final controller = VideoPlayerController.networkUrl(Uri.parse(url));
-      await controller.initialize();
+      await controller.initialize().then((_){setState(() {});});
       await controller.setLooping(false);
       await controller.play();
-      if (!mounted) {
-        await controller.dispose();
-        return;
+      if (!mounted) { 
+        await controller.dispose(); 
+        return; 
       }
-      setState(() {
-        _controller = controller;
-        _loading = false;
+      setState(() { 
+        _controller = controller; 
+        _loading = false; 
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = 'Playback error: $e';
-        _loading = false;
+      setState(() { 
+        _error = 'Playback error: $e'; 
+        _loading = false; 
       });
+    }
+  }
+
+  void _onVolumeToggle() {
+    if (_controller == null) return;
+    final currentVolume = _controller!.value.volume;
+
+    if (currentVolume > 0) {
+      // Muting: Save current volume first
+      _lastVolume = currentVolume;
+      _controller!.setVolume(0);
+    } else {
+      // Unmuting: Restore to the last known volume
+      _controller!.setVolume(_lastVolume);
+    }
+  }
+
+  void _seekRelative(Duration offset) {
+    if (_controller == null) return;
+    final newPosition = _controller!.value.position + offset;
+    _controller!.seekTo(newPosition);
+  }
+
+  void _toggleFullScreen() {
+    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
   }
 
@@ -111,7 +148,15 @@ class _ChannelPlayerState extends State<ChannelPlayer> {
           isPlaying: value.isPlaying,
           onPlayPause: () => value.isPlaying ? controller.pause() : controller.play(),
           volume: value.volume,
-          onVolumeChanged: (v) => controller.setVolume(v),
+          onVolumeChanged: (v) {
+            controller.setVolume(v);
+            if (v > 0) _lastVolume = v; // Update restore point if user slides
+          },
+          onVolumeToggle: _onVolumeToggle,
+          onSeekBackward: () => _seekRelative(const Duration(seconds: -10)),
+          onSeekForward: () => _seekRelative(const Duration(seconds: 10)),
+          onToggleFullScreen: _toggleFullScreen,
+          isFullScreen: MediaQuery.of(context).orientation == Orientation.landscape,
         );
       },
     );
